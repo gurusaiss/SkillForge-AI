@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#060B14"/>
+      <stop offset="100%" style="stop-color:#0F172A"/>
+    </linearGradient>
+    <linearGradient id="title" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#818CF8"/>
+      <stop offset="50%" style="stop-color:#C084FC"/>
+      <stop offset="100%" style="stop-color:#67E8F9"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" style="stop-color:#6366F1;stop-opacity:0.15"/>
+      <stop offset="100%" style="stop-color:#6366F1;stop-opacity:0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+
+  <!-- Border -->
+  <rect x="1" y="1" width="1198" height="628" rx="12" fill="none" stroke="#1E293B" stroke-width="2"/>
+
+  <!-- Brain icon -->
+  <rect x="72" y="72" width="60" height="60" rx="14" fill="#6366F1" fill-opacity="0.2" stroke="#6366F1" stroke-opacity="0.4" stroke-width="1.5"/>
+  <text x="102" y="114" font-size="32" text-anchor="middle" font-family="serif">🧠</text>
+
+  <!-- Badge -->
+  <rect x="72" y="160" width="320" height="28" rx="14" fill="#6366F1" fill-opacity="0.12" stroke="#6366F1" stroke-opacity="0.3" stroke-width="1"/>
+  <circle cx="90" cy="174" r="4" fill="#818CF8"/>
+  <text x="102" y="179" font-size="11" fill="#818CF8" font-family="Inter, Arial, sans-serif" font-weight="600" letter-spacing="1">Autonomous AI Learning Platform · 7-Agent System</text>
+
+  <!-- Main title -->
+  <text x="72" y="290" font-size="96" font-weight="900" font-family="Inter, Arial, sans-serif" fill="url(#title)" letter-spacing="-2">SKILL FORGE</text>
+
+  <!-- Tagline -->
+  <text x="72" y="348" font-size="28" font-weight="700" fill="#CBD5E1" font-family="Inter, Arial, sans-serif">Master Any Skill. Autonomously.</text>
+
+  <!-- Description -->
+  <text x="72" y="400" font-size="17" fill="#64748B" font-family="Inter, Arial, sans-serif">A multi-agent AI system that diagnoses gaps, builds personalized plans,</text>
+  <text x="72" y="424" font-size="17" fill="#64748B" font-family="Inter, Arial, sans-serif">runs adaptive sessions, and certifies mastery — without human instruction.</text>
+
+  <!-- Stats row -->
+  <!-- Stat 1 -->
+  <rect x="72" y="476" width="230" height="78" rx="12" fill="#0F172A" stroke="#1E293B" stroke-width="1.5"/>
+  <text x="92" y="514" font-size="28" font-weight="900" fill="#818CF8" font-family="Inter, Arial, sans-serif" font-variant-numeric="tabular-nums">7</text>
+  <text x="92" y="535" font-size="11" fill="#475569" font-family="Inter, Arial, sans-serif" letter-spacing="1" font-weight="600">SPECIALIZED AGENTS</text>
+
+  <!-- Stat 2 -->
+  <rect x="318" y="476" width="230" height="78" rx="12" fill="#0F172A" stroke="#1E293B" stroke-width="1.5"/>
+  <text x="338" y="514" font-size="28" font-weight="900" fill="#10B981" font-family="Inter, Arial, sans-serif">10</text>
+  <text x="338" y="535" font-size="11" fill="#475569" font-family="Inter, Arial, sans-serif" letter-spacing="1" font-weight="600">Q PER MODULE (MCQ+FIB+SUBJ)</text>
+
+  <!-- Stat 3 -->
+  <rect x="564" y="476" width="230" height="78" rx="12" fill="#0F172A" stroke="#1E293B" stroke-width="1.5"/>
+  <text x="584" y="514" font-size="28" font-weight="900" fill="#C084FC" font-family="Inter, Arial, sans-serif">∞</text>
+  <text x="584" y="535" font-size="11" fill="#475569" font-family="Inter, Arial, sans-serif" letter-spacing="1" font-weight="600">SKILLS SUPPORTED</text>
+
+  <!-- Stat 4 -->
+  <rect x="810" y="476" width="318" height="78" rx="12" fill="#0F172A" stroke="#1E293B" stroke-width="1.5"/>
+  <text x="830" y="514" font-size="28" font-weight="900" fill="#F59E0B" font-family="Inter, Arial, sans-serif">100%</text>
+  <text x="830" y="535" font-size="11" fill="#475569" font-family="Inter, Arial, sans-serif" letter-spacing="1" font-weight="600">AUTONOMOUS OPERATION</text>
+
+  <!-- AI ON badge -->
+  <rect x="1050" y="72" width="100" height="30" rx="15" fill="#052E16" stroke="#10B981" stroke-opacity="0.4" stroke-width="1"/>
+  <circle cx="1068" cy="87" r="4" fill="#10B981"/>
+  <text x="1078" y="92" font-size="11" fill="#10B981" font-family="Inter, Arial, sans-serif" font-weight="700">AI ON</text>
+</svg>
