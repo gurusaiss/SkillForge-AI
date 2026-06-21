@@ -240,6 +240,147 @@ class SmartAgent {
     return { planDay, challenge };
   }
 
+  // ── submitAssessment — 10-question daily session scoring ─────────────────
+  async submitAssessment({ userId, day, skillId, challenge, answers }) {
+    const session = this.loadSession(userId);
+    const planDay = session.learningPlan.find(e => e.day === parseInt(day, 10));
+    if (!planDay) throw new Error(`Day ${day} not found in learning plan`);
+
+    const questions = challenge?.assessment?.questions || [];
+    if (!Array.isArray(questions) || questions.length !== 10) {
+      throw new Error('Session assessment must contain exactly 10 questions');
+    }
+
+    const normalizedAnswers = questions.map((question, index) => ({
+      questionId: question.id,
+      answer: answers?.[question.id] ?? answers?.[index] ?? '',
+    }));
+
+    const questionResults = this.evaluator.scoreDiagnostic(questions, normalizedAnswers);
+    const score = Math.round(questionResults.reduce((sum, result) => sum + result.score, 0) / questionResults.length);
+    const grade = this.evaluator.calculateGrade(score);
+    const correctCount = questionResults.filter(result => result.score >= 80).length;
+    const missed = questionResults.filter(result => result.score < 80);
+
+    const strengths = questionResults
+      .filter(result => result.score >= 80)
+      .slice(0, 4)
+      .map(result => `${result.questionId}: ${result.feedback}`);
+
+    const weaknesses = missed
+      .slice(0, 4)
+      .map(result => `${result.questionId}: ${result.feedback}`);
+
+    const modelSolution = questions.map((question, index) => {
+      const result = questionResults[index];
+      return [
+        `${index + 1}. ${question.question}`,
+        `Your answer: ${normalizedAnswers[index]?.answer || 'No answer provided'}`,
+        `Result: ${result.score}% — ${result.feedback}`,
+        `Expected answer: ${question.correct || question.sample_good_answer || 'N/A'}`,
+        question.sample_good_answer ? `Model guidance: ${question.sample_good_answer}` : null,
+      ].filter(Boolean).join('\n');
+    }).join('\n\n');
+
+    const evaluation = {
+      score,
+      grade,
+      strengths: strengths.length ? strengths : ['Attempted the full session assessment'],
+      weaknesses: weaknesses.length ? weaknesses : ['Review the model solution to tighten weak areas'],
+      feedback: `You answered ${correctCount} of ${questions.length} questions well and scored ${score}%.`,
+      coachNote: missed.length
+        ? `Review ${missed.slice(0, 3).map(item => item.questionId).join(', ')} and compare your answer with the model solution.`
+        : 'Strong session. Keep the same reasoning pattern in the next topic.',
+      modelSolution,
+      source: 'rule-based',
+      questionResults,
+    };
+
+    const completedAt = new Date().toISOString();
+    const skill = session.goal.skills.find(e => e.id === skillId);
+
+    const record = {
+      day: Number(day),
+      skillId,
+      skillName: skill?.name || skillId,
+      challenge,
+      answers: normalizedAnswers,
+      questionResults,
+      score,
+      grade,
+      strengths: evaluation.strengths,
+      weaknesses: evaluation.weaknesses,
+      feedback: evaluation.feedback,
+      coachNote: evaluation.coachNote,
+      evaluationSource: evaluation.source,
+      assessment: true,
+      completedAt,
+    };
+
+    session.sessions.push(record);
+
+    session.learningPlan = session.learningPlan.map(e =>
+      e.day === Number(day) ? { ...e, completed: true, score } : e
+    );
+
+    if (skill) {
+      skill.sessionsCompleted += 1;
+      skill.mastery = Math.round(
+        session.sessions.filter(e => e.skillId === skillId)
+          .reduce((s, e) => s + e.score, 0) /
+        session.sessions.filter(e => e.skillId === skillId).length
+      );
+      skill.status = skill.mastery >= 75 ? 'complete' : 'active';
+    }
+
+    // Run adaptor (includes Agent Debate)
+    const adaptationResult = this.adaptor.apply(session.learningPlan, session.sessions, session.goal.skills);
+    session.learningPlan = adaptationResult.learningPlan;
+
+    if (!session.agentDecisions) session.agentDecisions = [];
+    if (!session.agentDebates) session.agentDebates = [];
+
+    if (adaptationResult.debate) {
+      session.agentDebates.push(adaptationResult.debate);
+      const debateDecision = AgentDebate.formatAsDecision(adaptationResult.debate);
+      if (debateDecision) session.agentDecisions.push(debateDecision);
+    }
+
+    if (adaptationResult.message) {
+      session.adaptations.push(adaptationResult.message);
+      if (!adaptationResult.debate) {
+        session.agentDecisions.push({
+          id: session.agentDecisions.length + 1,
+          timestamp: new Date().toISOString(),
+          type: 'adaptation',
+          icon: '⚡',
+          title: 'AdaptorAgent — Plan Modified',
+          detail: adaptationResult.message,
+          reasoning: 'Agent monitors rolling average every 3 sessions. Scores < 50 → adds review days. Scores > 88 → accelerates.',
+        });
+      }
+    }
+
+    session.agentDecisions.push({
+      id: session.agentDecisions.length + 1,
+      timestamp: completedAt,
+      type: 'session_complete',
+      icon: '✅',
+      title: `EvaluatorAgent — Day ${day} Assessment Scored`,
+      detail: `Score: ${score}% (${grade}). Correct/well-attempted: ${correctCount}/${questions.length}. Strengths: ${evaluation.strengths.slice(0, 2).join(', ')}. Gaps: ${evaluation.weaknesses.slice(0, 2).join(', ')}.`,
+      reasoning: `Evaluated ${questions.length} session questions against expected answers, acceptable fill-in terms, and keyword coverage.`,
+    });
+
+    this._detectSkillDrift(session);
+    this.saveSession(session);
+
+    return {
+      evaluation,
+      adaptations: session.adaptations,
+      nextDay: session.learningPlan.find(e => !e.completed)?.day || null,
+    };
+  }
+
   // ── submitSession — Agent Debate + Gemini scoring ─────────────────────────
   async submitSession({ userId, day, skillId, challenge, userResponse }) {
     const session = this.loadSession(userId);

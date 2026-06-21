@@ -94,8 +94,9 @@ function MissionCard({ planDay, adaptations, onLaunch, loading }) {
         disabled={loading}
         className="w-full py-4 rounded-xl font-black text-sm bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white transition-all hover:shadow-xl hover:shadow-indigo-500/20 active:scale-[0.99] disabled:opacity-60"
       >
-        {loading ? '⏳ Loading Challenge…' : '🚀 Launch Practice Session'}
+        {loading ? '⏳ Loading Assessment…' : '🚀 Launch Session Assessment'}
       </button>
+      <p className="text-xs text-slate-500 text-center -mt-2">10 questions per day: 7 MCQ, 2 blanks, 1 subjective answer</p>
     </div>
   );
 }

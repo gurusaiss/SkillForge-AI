@@ -50,6 +50,7 @@ export const api = {
   getDashboard:     (userId)       => request(`/api/session/dashboard/${userId}`),
   getChallenge:     (userId, day)  => request(`/api/session/challenge/${userId}/${day}`),
   submitSession:    (body)         => request('/api/session/submit', { method: 'POST', body: JSON.stringify(body) }),
+  submitAssessment: (body)         => request('/api/session/submit-assessment', { method: 'POST', body: JSON.stringify(body) }),
   generateReport:   (userId)       => request('/api/report/generate', { method: 'POST', body: JSON.stringify({ userId }) }),
   getReport:        (userId)       => request(`/api/report/${userId}`),
   getGoal:          (userId)       => request(`/api/goal/${userId}`),

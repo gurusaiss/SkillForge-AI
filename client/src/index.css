@@ -4,20 +4,52 @@
 
 :root {
   color-scheme: dark;
+  font-size: 100%;
 }
 
 * {
   box-sizing: border-box;
 }
 
+html,
+body,
+#root {
+  width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
 body {
   margin: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
   background:
     radial-gradient(circle at top, rgba(99, 102, 241, 0.18), transparent 30%),
     linear-gradient(180deg, #0f172a 0%, #111827 100%);
   color: #f8fafc;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img,
+svg,
+canvas,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+button,
+textarea,
+input,
+select {
+  font: inherit;
+}
+
+textarea {
+  resize: vertical;
 }
 
 a {
@@ -25,8 +57,80 @@ a {
   text-decoration: none;
 }
 
-button,
-textarea,
-input {
-  font: inherit;
+.text-\[8px\],
+.text-\[9px\],
+.text-\[10px\],
+.text-\[11px\],
+.text-\[12px\],
+.text-xs {
+  font-size: 14px !important;
+}
+
+.text-sm {
+  font-size: 16px !important;
+}
+
+.text-base {
+  font-size: 18px !important;
+}
+
+.text-lg {
+  font-size: 20px !important;
+}
+
+.text-xl {
+  font-size: 24px !important;
+}
+
+.text-2xl {
+  font-size: 30px !important;
+}
+
+.text-3xl {
+  font-size: 36px !important;
+}
+
+.text-4xl {
+  font-size: 40px !important;
+}
+
+.text-5xl {
+  font-size: 48px !important;
+}
+
+.text-6xl {
+  font-size: 60px !important;
+}
+
+.text-7xl {
+  font-size: 68px !important;
+}
+
+.text-8xl {
+  font-size: 76px !important;
+}
+
+@media (min-width: 768px) {
+  :root {
+    font-size: 106%;
+  }
+}
+
+@media (min-width: 1280px) {
+  :root {
+    font-size: 112%;
+  }
+}
+
+@media (max-width: 640px) {
+  .mx-auto {
+    width: 100%;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    min-height: 44px;
+  }
 }

@@ -45,6 +45,24 @@ router.post('/submit', async (req, res) => {
   }
 });
 
+router.post('/submit-assessment', async (req, res) => {
+  try {
+    const { userId, day, skillId, challenge, answers } = req.body;
+    if (!userId || !day || !skillId || !challenge || !answers) {
+      return res.status(400).json({
+        success: false, data: null,
+        error: 'userId, day, skillId, challenge, and answers are required',
+      });
+    }
+    const result = await agent.submitAssessment({ userId, day, skillId, challenge, answers });
+    res.json({ success: true, data: result, error: null });
+  } catch (error) {
+    console.error('[POST /api/session/submit-assessment]', error);
+    const status = error.message.includes('not found') || error.message.includes('10 questions') ? 400 : 500;
+    res.status(status).json({ success: false, data: null, error: error.message });
+  }
+});
+
 // NEW: Agent debates endpoint
 router.get('/debates/:userId', async (req, res) => {
   try {

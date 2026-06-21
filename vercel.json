@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "framework": null,
+  "installCommand": "npm install --include=dev",
+  "buildCommand": "cd client && npm run build",
+  "devCommand": "npm run dev --workspace=server",
+  "builds": [
+    {
+      "src": "server/index.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "server/index.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "server/index.js"
+    }
+  ]
+}

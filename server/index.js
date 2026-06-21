@@ -88,7 +88,8 @@ if (existsSync(clientDist)) {
   });
 }
 
-const server = app.listen(PORT, () => {
+const isVercel = process.env.VERCEL === '1';
+const server = isVercel ? null : app.listen(PORT, () => {
   console.log(`
 ╔══════════════════════════════════════╗
 ║       SkillForge AI Server v2        ║

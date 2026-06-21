@@ -66,6 +66,35 @@ Return ONLY valid JSON:
     ],
     "correct": "A) correct or plausible option",
     "explanation": "Why this answer is correct."
+  },
+  "assessment": {
+    "topic": "${topic}",
+    "questions": [
+      {
+        "id": "a1",
+        "type": "multiple_choice",
+        "question": "Specific MCQ about ${topic}?",
+        "options": ["A) correct option", "B) wrong option", "C) wrong option", "D) wrong option"],
+        "correct": "A) correct option",
+        "explanation": "Why this answer is correct."
+      },
+      {
+        "id": "a8",
+        "type": "fill_in_blank",
+        "question": "In ${domain}, ________ is the term most directly related to ${topic}.",
+        "correct": "${topic}",
+        "acceptable_answers": ["${topic}", "${topic.toLowerCase()}"],
+        "explanation": "Why this term is correct."
+      },
+      {
+        "id": "a10",
+        "type": "subjective",
+        "question": "Explain how you would apply ${topic} in a real ${domain} scenario. Include reasoning and one example.",
+        "sample_good_answer": "A strong answer explains the concept, applies it to a realistic scenario, and names common mistakes.",
+        "score_keywords": ["${topic.toLowerCase()}", "${domain.toLowerCase()}", "example", "reasoning"],
+        "explanation": "What a complete answer should include."
+      }
+    ]
   }
 }
 
@@ -190,12 +219,218 @@ IMPORTANT:
     };
   }
 
+  normalizeAssessmentQuestion(question, index, planDay, session) {
+    const topic = planDay.topic || planDay.skillName || 'today\'s topic';
+    const type = question.type === 'fib' ? 'fill_in_blank' : question.type;
+    const options = type === 'multiple_choice'
+      ? (question.options || []).map((option, optionIndex) => {
+          if (/^[A-D]\)/.test(option)) return option;
+          return `${['A', 'B', 'C', 'D'][optionIndex] || optionIndex + 1}) ${option}`;
+        })
+      : undefined;
+    const correct = question.correct || (options?.[0]);
+    const acceptableAnswers = type === 'fill_in_blank'
+      ? (question.acceptable_answers || [correct, String(correct).toLowerCase()].filter(Boolean))
+      : undefined;
+
+    return {
+      ...question,
+      id: question.id || `a${index + 1}`,
+      type,
+      skillId: planDay.skillId,
+      skillName: planDay.skillName || session?.goal?.domainLabel || 'Skill',
+      concept: question.concept || topic,
+      difficulty: question.difficulty || (index < 3 ? 'basic' : index < 7 ? 'moderate' : 'advanced'),
+      question: question.question,
+      options,
+      correct,
+      acceptable_answers: acceptableAnswers,
+      explanation: question.explanation || question.sample_good_answer || '',
+      score_keywords: question.score_keywords || [String(topic).toLowerCase(), String(planDay.skillName || '').toLowerCase()],
+      source: question.source || 'generated',
+    };
+  }
+
+  buildAssessmentFallback(planDay, session) {
+    const topic = planDay.topic || planDay.skillName || 'today\'s topic';
+    const skillName = planDay.skillName || planDay.skillId || 'the skill';
+    const domain = session?.goal?.domainLabel || skillName;
+    const topicLower = String(topic).toLowerCase();
+    const idBase = `assessment_${planDay.skillId}_day${planDay.day}`;
+
+    const mcqTemplates = [
+      {
+        question: `Which statement best describes "${topic}" in ${skillName}?`,
+        options: [
+          `A) "${topic}" is the specific practice or concept used to complete relevant ${skillName} work correctly`,
+          `B) "${topic}" is unrelated to ${skillName} and only matters in theory`,
+          `C) "${topic}" should be skipped until every advanced technique is mastered`,
+          `D) "${topic}" has only one meaning and never changes by project context`,
+        ],
+        correct: `A) "${topic}" is the specific practice or concept used to complete relevant ${skillName} work correctly`,
+        explanation: `"${topic}" is the focus of this session, so the correct answer connects it directly to practical ${skillName} work.`,
+      },
+      {
+        question: `In a real ${domain} project, when would you apply "${topic}"?`,
+        options: [
+          `A) When the task requires decisions, steps, or quality checks connected to ${topic}`,
+          `B) Only after the project is finished and no changes can be made`,
+          `C) When avoiding documentation and examples is the goal`,
+          `D) Only when the client asks for unrelated background information`,
+        ],
+        correct: `A) When the task requires decisions, steps, or quality checks connected to ${topic}`,
+        explanation: `Practitioners apply ${topic} during active work where it affects decisions and outcomes.`,
+      },
+      {
+        question: `What is the most common beginner mistake with "${topic}"?`,
+        options: [
+          `A) Treating ${topic} as optional instead of applying it systematically`,
+          `B) Practising ${topic} too early in the learning journey`,
+          `C) Using too many real-world examples`,
+          `D) Connecting ${topic} to the current project goal`,
+        ],
+        correct: `A) Treating ${topic} as optional instead of applying it systematically`,
+        explanation: `Beginners often underestimate ${topic} and skip structured application.`,
+      },
+      {
+        question: `Which outcome best proves that a learner understands "${topic}"?`,
+        options: [
+          `A) They can explain it, apply it to a new scenario, and avoid common mistakes`,
+          `B) They can only repeat the word ${topic} from memory`,
+          `C) They avoid using examples because examples make answers longer`,
+          `D) They complete work without checking whether ${topic} was applied correctly`,
+        ],
+        correct: `A) They can explain it, apply it to a new scenario, and avoid common mistakes`,
+        explanation: `Understanding transfers when the learner can reason and apply ${topic} beyond memorization.`,
+      },
+      {
+        question: `How should "${topic}" be connected to quality in ${skillName}?`,
+        options: [
+          `A) It should guide choices that improve accuracy, consistency, and usefulness`,
+          `B) It should be ignored once the first draft is complete`,
+          `C) It should only appear in the final paragraph of a project`,
+          `D) It should be replaced with generic advice whenever possible`,
+        ],
+        correct: `A) It should guide choices that improve accuracy, consistency, and usefulness`,
+        explanation: `Quality improves when ${topic} is used deliberately to guide work.`,
+      },
+      {
+        question: `Which sequence is best when using "${topic}" in a project?`,
+        options: [
+          `A) Understand the requirement, apply ${topic}, check the result, then refine`,
+          `B) Guess first, apply randomly, then avoid reviewing the outcome`,
+          `C) Skip the requirement, copy a template, and submit without checking`,
+          `D) Focus only on formatting and ignore ${topic} completely`,
+        ],
+        correct: `A) Understand the requirement, apply ${topic}, check the result, then refine`,
+        explanation: `A reliable workflow applies ${topic} intentionally and verifies the result.`,
+      },
+      {
+        question: `Why does "${topic}" matter for the specific topic of this session?`,
+        options: [
+          `A) Because it is the day's focus and directly supports the learning objective`,
+          `B) Because it is a decorative label with no effect on performance`,
+          `C) Because it should be replaced with a different topic every time`,
+          `D) Because it only matters after the entire course is complete`,
+        ],
+        correct: `A) Because it is the day's focus and directly supports the learning objective`,
+        explanation: `Today's assessment is built around ${topic}, so it directly measures the session objective.`,
+      },
+    ];
+
+    const mcqs = mcqTemplates.map((template, index) => ({
+      id: `${idBase}_mcq_${index + 1}`,
+      skillId: planDay.skillId,
+      skillName,
+      concept: topic,
+      difficulty: ['basic', 'basic', 'moderate', 'moderate', 'practical', 'application', 'synthesis'][index],
+      type: 'multiple_choice',
+      ...template,
+      key_concepts: [topic],
+      score_keywords: [topicLower, skillName.toLowerCase()],
+      source: 'fallback',
+    }));
+
+    const fibs = [
+      {
+        id: `${idBase}_fib_1`,
+        skillId: planDay.skillId,
+        skillName,
+        concept: topic,
+        difficulty: 'moderate',
+        type: 'fill_in_blank',
+        question: `In ${skillName}, ________ is the key focus connected to ${topic}.`,
+        correct: topic,
+        acceptable_answers: [topic, topicLower],
+        explanation: `"${topic}" is the exact focus of this session.`,
+        key_concepts: [topic],
+        score_keywords: [topicLower],
+        source: 'fallback',
+      },
+      {
+        id: `${idBase}_fib_2`,
+        skillId: planDay.skillId,
+        skillName,
+        concept: topic,
+        difficulty: 'moderate',
+        type: 'fill_in_blank',
+        question: `A strong answer about ${topic} should include clear reasoning and at least one practical ________.`,
+        correct: 'example',
+        acceptable_answers: ['example', 'examples', 'scenario', 'scenarios'],
+        explanation: `Practical examples show that the learner can apply ${topic}, not just define it.`,
+        key_concepts: [topic, 'example'],
+        score_keywords: ['example', topicLower],
+        source: 'fallback',
+      },
+    ];
+
+    const subjective = {
+      id: `${idBase}_subjective_1`,
+      skillId: planDay.skillId,
+      skillName,
+      concept: topic,
+      difficulty: 'advanced',
+      type: 'subjective',
+      question: `Explain how you would apply "${topic}" in a real ${skillName} project. Include your steps, reasoning, one example, and one common mistake to avoid.`,
+      sample_good_answer: `A strong answer defines ${topic}, explains why it matters in ${skillName}, gives a realistic scenario, lists clear steps, and identifies a common mistake such as skipping verification or treating ${topic} as optional.`,
+      score_keywords: [topicLower, skillName.toLowerCase(), 'steps', 'reasoning', 'example', 'mistake'],
+      key_concepts: [topic, 'application', 'reasoning'],
+      explanation: `Subjective answers are scored for definition, practical application, reasoning, example quality, and awareness of mistakes.`,
+      source: 'fallback',
+    };
+
+    return {
+      topic,
+      questions: [...mcqs, ...fibs, subjective],
+    };
+  }
+
+  ensureAssessment(challenge, planDay, session) {
+    const sourceQuestions = challenge?.assessment?.questions || [];
+    const mcqs = sourceQuestions.filter((q) => q.type === 'multiple_choice' && (q.options || []).length >= 4 && q.correct);
+    const fibs = sourceQuestions.filter((q) => q.type === 'fill_in_blank' && q.correct);
+    const subjs = sourceQuestions.filter((q) => q.type === 'subjective' && q.question);
+
+    if (mcqs.length >= 7 && fibs.length >= 2 && subjs.length >= 1) {
+      const questions = [...mcqs.slice(0, 7), ...fibs.slice(0, 2), ...subjs.slice(0, 1)]
+        .map((question, index) => this.normalizeAssessmentQuestion(question, index, planDay, session));
+      challenge.assessment = {
+        topic: planDay.topic || planDay.skillName || 'today\'s topic',
+        questions,
+      };
+      return challenge;
+    }
+
+    challenge.assessment = this.buildAssessmentFallback(planDay, session);
+    return challenge;
+  }
+
   // ── Main entry ───────────────────────────────────────────────────────────
   async getChallengeForDay(planDay, session = null) {
     // 1. Try Gemini for domain-specific challenge
     if (GeminiService.isEnabled()) {
       const llmChallenge = await this.generateWithLLM(planDay, session);
-      if (llmChallenge) return llmChallenge;
+      if (llmChallenge) return this.ensureAssessment(llmChallenge, planDay, session);
     }
 
     // 2. Try static knowledge bank
@@ -208,11 +443,11 @@ IMPORTANT:
       || options[0];
 
     if (challenge) {
-      return this.personalizeChallenge(challenge, planDay, session);
+      return this.ensureAssessment(this.personalizeChallenge(challenge, planDay, session), planDay, session);
     }
 
     // 3. Dynamic fallback
-    return this.buildDynamicChallenge(planDay, session);
+    return this.ensureAssessment(this.buildDynamicChallenge(planDay, session), planDay, session);
   }
 }
 
