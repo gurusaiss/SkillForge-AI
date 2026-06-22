@@ -18,7 +18,10 @@ import GeminiService from '../services/GeminiService.js';
 import AgentDebate from './AgentDebate.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = join(__dirname, '../data');
+// Vercel's filesystem is read-only except for /tmp
+const DATA_DIR = process.env.NODE_ENV === 'production'
+  ? '/tmp/auto-ai-data'
+  : join(__dirname, '../data');
 
 if (!existsSync(DATA_DIR)) {
   mkdirSync(DATA_DIR, { recursive: true });

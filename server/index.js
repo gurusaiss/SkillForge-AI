@@ -14,7 +14,10 @@ import marketRouter from './routes/market.js';
 import demoRouter from './routes/demo.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const dataPath = join(__dirname, 'data');
+// Vercel's filesystem is read-only except for /tmp
+const dataPath = process.env.NODE_ENV === 'production'
+  ? '/tmp/auto-ai-data'
+  : join(__dirname, 'data');
 
 // Load .env from project root (one file, that's all)
 loadEnv(join(__dirname, '..'));
